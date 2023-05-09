@@ -1,6 +1,5 @@
-import os
+import os, torch, pysnooper
 import pandas as pd
-import torch
 from torch.utils.data import Dataset
 from transformers import BertTokenizer, BertForMaskedLM
 PRETRAINED_MODEL_NAME = "bert-base-chinese"  # 指定繁簡中文 BERT-BASE 預訓練模
@@ -18,6 +17,7 @@ class FakeNewsDataset(Dataset):
         self.tokenizer = tokenizer  # 我們將使用 BERT tokenizer
     
     # 定義回傳一筆訓練 / 測試數據的函式
+    @pysnooper.snoop()  # 加入以了解所有轉換過程
     def __getitem__(self, idx):
         if self.mode == "test":
             text_a, text_b = self.df.iloc[idx, :2].values
