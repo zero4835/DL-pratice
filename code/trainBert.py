@@ -3,9 +3,9 @@ from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from torch.utils.data import TensorDataset, random_split
 from transformers import BertTokenizer,LongformerTokenizer, LongformerModel
 
-save_path = "C:/Users/ROUSER6/Desktop/DEEP_LEARNING_Pratice/model"
+save_path = "C:/Users/ROUSER6/Desktop/DEEP_LEARNING_Pratice/model/useTxTtrainModel"
 
-# 定义数据处理函数
+# 資料處理函數
 def load_dataset(data_dir, tokenizer):
     #Loding Model
     model = LongformerModel.from_pretrained(save_path)
@@ -25,7 +25,7 @@ def load_dataset(data_dir, tokenizer):
                 label_id += 1
             labels.append(label_dict[label])
             
-    # 将文本转换为 BERT token ID 序列，并添加特殊标记
+    # 將文本轉換為 BERT token ID 序列，並添加特殊標記
     input_ids = []
     attention_masks = []
     for text in texts:
@@ -35,12 +35,13 @@ def load_dataset(data_dir, tokenizer):
         attention_masks.append(encoded_dict['attention_mask'])
 
 
-    # 创建 PyTorch tensors
+    # 創建 PyTorch tensors
     input_ids = torch.tensor(input_ids, dtype=torch.long)
     attention_masks = torch.tensor(attention_masks, dtype=torch.long)
     labels = torch.tensor(labels, dtype=torch.long)
         
     # 将数据集包装成 TensorDataset
+    # 將Dataset包裝成 TensorDataset
     dataset = TensorDataset(input_ids, labels)
     
     #將訓練完的Model與Tokenizer保存
