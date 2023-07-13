@@ -31,7 +31,6 @@ print("訓練樣本數：", len(df_train))
 print(df_train.head()+'\n'+'-'*25)
 
 print('-'*25)
-
 df_test = pd.read_csv("../Excel/test.csv")
 df_test = df_test.loc[:, ["title1_zh", "title2_zh", "id"]]
 df_test.columns = ["text_a", "text_b", "Id"]

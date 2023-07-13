@@ -5,13 +5,13 @@ from torch.utils.data import TensorDataset
 from transformers import BertTokenizer,LongformerTokenizer, LongformerModel, BertForSequenceClassification
 
 # 設置讀取檔案的路徑和檔名
-# file_path = "C:/Users/ROUSER6/Desktop/DEEP_LEARNING_Pratice/ChineseNlpCorpus/weibo_senti_100k/weibo_senti_100k/chinese.csv"
-# save_path = "C:/Users/ROUSER6/Desktop\DEEP_LEARNING_Pratice/model/useCsvttrainModel"
+file_path = "C:/Users/ROUSER6/Desktop/DEEP_LEARNING_Pratice/ChineseNlpCorpus/weibo_senti_100k/weibo_senti_100k/test.csv"
+save_path = "C:/Users/ROUSER6/Desktop\DEEP_LEARNING_Pratice/model/useCsvttrainModel"
 
 # Loding token
-#tokenizer = BertTokenizer.from_pretrained(save_path)
+tokenizer = BertTokenizer.from_pretrained(save_path)
 # Loding Model
-#model = LongformerModel.from_pretrained(save_path)
+model = LongformerModel.from_pretrained(save_path)
 
 def  trainModel(file_path, tokenizer, model, save_path):
     # 讀取 csv 檔案並將資料轉換為 DataFrame
@@ -29,7 +29,9 @@ def  trainModel(file_path, tokenizer, model, save_path):
     input_ids = torch.tensor(input_ids, dtype=torch.long)
     attention_masks = torch.tensor(attention_masks, dtype=torch.long)
     labels = torch.tensor(data['label'], dtype=torch.long)
-
+    
+    output = model(input_ids, attention_masks,output_hidden_states=True)
+    
     # 將資料集包裝為 TensorDataset
     dataset = TensorDataset(input_ids, attention_masks, labels)
 
@@ -41,5 +43,6 @@ def  trainModel(file_path, tokenizer, model, save_path):
     
     return dataset
 
-# dataset=trainModel(file_path, tokenizer)
-# print(len(dataset))
+dataset=trainModel(file_path, tokenizer, model, save_path)
+print(len(dataset))
+print(dataset)

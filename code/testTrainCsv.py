@@ -35,5 +35,6 @@ attention_masks = torch.tensor([encoded_dict['attention_mask']], dtype=torch.lon
 outputs = model(input_ids, attention_mask=attention_masks)
 _, predicted = torch.max(outputs.logits, dim=1)
 
+
 # 輸出預測結果
 print(label_list[predicted])    

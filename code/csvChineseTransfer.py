@@ -5,11 +5,11 @@ from opencc import OpenCC
 cc = OpenCC('s2t')
 
 # 指定輸入和輸出的 CSV 檔案名稱
-input_file = 'C:/Users/ROUSER6/Desktop/DEEP_LEARNING_Pratice/ChineseNlpCorpus/weibo_senti_100k/weibo_senti_100k/weibo_senti_100k.csv'
-output_file = 'C:/Users/ROUSER6/Desktop/DEEP_LEARNING_Pratice/ChineseNlpCorpus/weibo_senti_100k/weibo_senti_100k/chinese.csv'
+input_file = r'C:\Users\ROUSER6\Desktop\DEEP_LEARNING_Pratice\chinese_text_cnn-master\chinese_text_cnn-master\data\ch_auto.csv'
+output_file = r'C:\Users\ROUSER6\Desktop\DEEP_LEARNING_Pratice\chinese_text_cnn-master\chinese_text_cnn-master\data\ch_auto_traditional.csv'
 
 # 開啟輸入檔案，讀取 CSV 資料
-with open(input_file, 'r', encoding='utf-8') as infile:
+with open(input_file, 'r', encoding='utf-8', errors='replace') as infile:
     reader = csv.reader(infile)
     # 讀取 CSV 的標題列
     header = next(reader)
@@ -17,7 +17,7 @@ with open(input_file, 'r', encoding='utf-8') as infile:
     header = [cc.convert(item) for item in header]
 
     # 開啟輸出檔案，寫入 CSV 資料
-    with open(output_file, 'w', newline='', encoding='utf-8') as outfile:
+    with open(output_file, 'w', newline='', encoding='utf-8', errors='replace') as outfile:
         writer = csv.writer(outfile)
         # 將轉換後的標題列寫入輸出檔案
         writer.writerow(header)
