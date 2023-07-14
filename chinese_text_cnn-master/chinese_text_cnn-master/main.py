@@ -8,7 +8,6 @@ import train
 import dataset
 
 parser = argparse.ArgumentParser(description='TextCNN text classifier')
-max_length = 128  # 設置文本最大長度為128
 # learning
 parser.add_argument('-lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
 parser.add_argument('-epochs', type=int, default=256, help='number of epochs for train [default: 256]')
@@ -40,7 +39,8 @@ parser.add_argument('-pretrained-path', type=str, default='pretrained', help='pa
 parser.add_argument('-device', type=int, default=-1, help='device to use for iterate data, -1 mean cpu [default: -1]')
 
 # option
-parser.add_argument('-snapshot', type=str, default=None, help='filename of model snapshot [default: None]')
+parser.add_argument('-snapshot', type=str, default=None,
+                    help='filename of model snapshot [default: None]')
 args = parser.parse_args()
 
 
@@ -50,28 +50,59 @@ def load_word_vectors(model_name, model_path):
 
 
 def load_dataset(text_field, label_field, args, **kwargs):
-    train_dataset, dev_dataset = dataset.get_dataset('data', text_field, label_field, max_length)
+    # train_dataset TabularDataset:56700
+    # dev_dataset TabularDataset:7000
+    train_dataset, dev_dataset = dataset.get_dataset('data', text_field, label_field)
     if args.static and args.pretrained_name and args.pretrained_path:
         vectors = load_word_vectors(args.pretrained_name, args.pretrained_path)
         text_field.build_vocab(train_dataset, dev_dataset, vectors=vectors)
     else:
         text_field.build_vocab(train_dataset, dev_dataset)
-        label_field.build_vocab(train_dataset, dev_dataset)
-
+    vocab = text_field.vocab
+    # text_field vocab={Vocab:35572}
+    # label_field vocab={Vocab:3}
     label_field.build_vocab(train_dataset, dev_dataset)
     train_iter, dev_iter = data.Iterator.splits(
         (train_dataset, dev_dataset),
         batch_sizes=(args.batch_size, len(dev_dataset)),
         sort_key=lambda x: len(x.text),
         **kwargs)
-    return train_iter, dev_iter
+    # train_iter={Iterator:443} batch_size:128
+    # dev_iter={Iterator:1} batch_size:7000
+    return train_iter, dev_iter, vocab
 
+
+def predict(model, vocab, sentence):
+    model.eval()
+    sentence = [vocab.stoi[w] for w in dataset.word_cut(sentence)]
+    if len(sentence) < 5:
+        for i in range(5):
+            sentence.append(1)
+    sentence = torch.as_tensor(sentence)
+    sentence = sentence.unsqueeze(1).t()
+    logits = model(sentence)
+    #return [pos, neu, neg]
+    print(logits)
+    max_value, max_index = torch.max(logits, dim=1)
+
+    # 取得最大值的分數和索引
+    max_score = max_value.item()
+    max_emotion_index = max_index.item()
+
+    # 根據索引對應到情緒類別
+    emotion_classes = ['正面情緒', '中性情緒', '負面情緒']
+    max_emotion = emotion_classes[max_emotion_index]
+
+    print('最大分數:', max_score)
+    print('最大情緒:', max_emotion)
 
 print('Loading data...')
 text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
-train_iter, dev_iter = load_dataset(text_field, label_field, args, device=-1, repeat=False, shuffle=True)
-
+# train_iter={Iterator:443} batch_size:128
+# dev_iter={Iterator:1} batch_size:7000
+train_iter, dev_iter, vocab = load_dataset(text_field, label_field, args, device=-1, repeat=False, shuffle=True)
+# 35572
 args.vocabulary_size = len(text_field.vocab)
 if args.static:
     args.embedding_dim = text_field.vocab.vectors.size()[-1]
@@ -79,6 +110,7 @@ if args.static:
 if args.multichannel:
     args.static = True
     args.non_static = True
+# 3
 args.class_num = len(label_field.vocab)
 args.cuda = args.device != -1 and torch.cuda.is_available()
 args.filter_sizes = [int(size) for size in args.filter_sizes.split(',')]
@@ -97,26 +129,20 @@ if args.snapshot:
 if args.cuda:
     torch.cuda.set_device(args.device)
     text_cnn = text_cnn.cuda()
+    
+# -----------------------------------------------------------------
+model_path = './snapshot/best_steps_1600.pt'
+state_dict = torch.load(model_path)
+
+# 将加载的状态字典分配给模型实例的 state_dict 属性
+text_cnn.load_state_dict(state_dict)
+
+# 将模型设置为评估模式
+text_cnn.eval()
+predict(text_cnn, vocab, '實在很難想像這是日本人的待客之道，一間坐位極不舒適超坑的拉麵直營店，平常日幾乎都不用排隊。採分區包廂式經營，每個包廂大約十個坐位，位子還超級窄小，椅子釘死在地板不能自由調整移動還要彎腰前傾縮著手臂吃，用餐環境超克難像是獄卒打開遮簾向X人送餐。說實在湯頭不錯但肉吃起來很瘦柴，蛋就像水煮鹽蛋也沒什麼特別的味道。麵質尚可但大約只有半球而已根本吃不飽要再點一碗越光米配加點的肉吃。價位是其他拉麵店近兩倍盤子價，其他拉麵店大部分加麵飯也都不用錢。附近超難停車的，連機車位都難找。')
+
+# training
 try:
-    train.train(train_iter, dev_iter, text_cnn, args)
+    train.train(train_iter, dev_iter, text_cnn, args) 
 except KeyboardInterrupt:
     print('Exiting from training early')
-    
-    
-    
-# text = "我很開心"
-
-# # 预处理文本数据
-# tokenized = text_field.tokenize(text)
-# indexed = [text_field.vocab.stoi[token] for token in tokenized]
-# tensor = torch.LongTensor(indexed).unsqueeze(1)
-
-# if args.cuda:
-#     tensor = tensor.cuda()
-
-# # 使用模型进行分类或预测
-# output = text_cnn(tensor)
-# predicted_label = torch.argmax(output, dim=1).item()
-# predicted_class = label_field.vocab.itos[predicted_label]
-
-# print("预测结果:", predicted_class)

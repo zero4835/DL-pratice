@@ -1,5 +1,5 @@
 import re
-from torchtext import data
+import torchtext.data as data
 import jieba
 import logging
 jieba.setLogLevel(logging.INFO)
@@ -12,9 +12,8 @@ def word_cut(text):
     return [word for word in jieba.cut(text) if word.strip()]
 
 
-def get_dataset(path, text_field, label_field, max_length):
+def get_dataset(path, text_field, label_field):
     text_field.tokenize = word_cut
-    text_field.fix_length = max_length  # 设置文本长度限制
     train, dev = data.TabularDataset.splits(
         path=path, format='tsv', skip_header=True,
         train='train.tsv', validation='dev.tsv',
@@ -24,4 +23,6 @@ def get_dataset(path, text_field, label_field, max_length):
             ('text', text_field)
         ]
     )
+    # train TabularDataset:56700
+    # dev TabularDataset:7000
     return train, dev

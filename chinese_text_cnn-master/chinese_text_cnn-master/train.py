@@ -14,13 +14,15 @@ def train(train_iter, dev_iter, model, args):
     model.train()
     for epoch in range(1, args.epochs + 1):
         for batch in train_iter:
+            # batch shape=[51, 128]
+            # feature shape=[51, 128]
+            # target shape=[128]
             feature, target = batch.text, batch.label
-            feature.data.t_(), target.data.sub_(1)
+            # feature.data.t_(), target.data.sub_(1)
+            with torch.no_grad():
+                feature.t_(), target.sub_(1)
             if args.cuda:
                 feature, target = feature.cuda(), target.cuda()
-            # 确保批次大小匹配
-            if feature.size(0) != args.batch_size:
-                continue
             optimizer.zero_grad()
             logits = model(feature)
             loss = F.cross_entropy(logits, target)
@@ -43,7 +45,7 @@ def train(train_iter, dev_iter, model, args):
                     last_step = steps
                     if args.save_best:
                         print('Saving best model, acc: {:.4f}%\n'.format(best_acc))
-                        save(model, args.save_dir, 'best', steps)
+                        save(model, './model', 'best', steps)
                 else:
                     if steps - last_step >= args.early_stopping:
                         print('\nearly stop by {} steps, acc: {:.4f}%'.format(args.early_stopping, best_acc))
@@ -55,10 +57,13 @@ def eval(data_iter, model, args):
     corrects, avg_loss = 0, 0
     for batch in data_iter:
         feature, target = batch.text, batch.label
-        feature.data.transpose(0, 1), target.data.squeeze()
-
+        # feature.data.t_(), target.data.sub_(1)
+        with torch.no_grad():
+            feature.t_(), target.sub_(1)
         if args.cuda:
             feature, target = feature.cuda(), target.cuda()
+        # feature shape=[7000, 59]
+        # target shape=[7000]
         logits = model(feature)
         loss = F.cross_entropy(logits, target)
         avg_loss += loss.item()
@@ -80,3 +85,5 @@ def save(model, save_dir, save_prefix, steps):
     save_prefix = os.path.join(save_dir, save_prefix)
     save_path = '{}_steps_{}.pt'.format(save_prefix, steps)
     torch.save(model.state_dict(), save_path)
+
+
