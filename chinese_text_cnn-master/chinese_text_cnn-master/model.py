@@ -12,12 +12,15 @@ class TextCNN(nn.Module):
         chanel_num = 1
         filter_num = args.filter_num
         filter_sizes = args.filter_sizes
-
+        
+        # num_embeddings
         vocabulary_size = args.vocabulary_size
+        # vocabulary_size = 119988
+        print(vocabulary_size)
         embedding_dimension = args.embedding_dim
 
-        # num_embeddings (python:int) – 辭典的大小尺寸，比如一共出現5000個詞，則輸入5000。此時索引為（0-4999）
-        # embedding_dim (python:int) – 嵌入向量的維度，即用多少維来表示一个符號。
+        # num_embeddings (python:int) – 辭典的大小尺寸，比如一共出現5000個詞，則輸入500099）
+        # embedding_dim (python:int) – 嵌入向量的維度，即用多少維来表示一个符號。。此時索引為（0-49
         # 输入: (∗) , 包含提取數量的任意形狀的長整型張量。
         # 输出: (∗,H) , 其中 * 為輸入的形狀，H為embedding_dim
         self.embedding = nn.Embedding(vocabulary_size, embedding_dimension)

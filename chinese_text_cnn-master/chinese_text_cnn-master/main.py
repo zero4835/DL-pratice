@@ -17,7 +17,7 @@ parser.add_argument('-log-interval', type=int, default=1,
                     help='how many steps to wait before logging training status [default: 1]')
 parser.add_argument('-test-interval', type=int, default=100,
                     help='how many steps to wait before testing [default: 100]')
-parser.add_argument('-save-dir', type=str, default='snapshot', help='where to save the snapshot')
+parser.add_argument('-save-dir', type=str, default='model', help='where to save the snapshot')
 parser.add_argument('-early-stopping', type=int, default=1000,
                     help='iteration numbers to stop without performance increasing')
 parser.add_argument('-save-best', type=bool, default=True, help='whether to save when get best performance')
@@ -40,7 +40,7 @@ parser.add_argument('-pretrained-path', type=str, default='pretrained', help='pa
 parser.add_argument('-device', type=int, default=-1, help='device to use for iterate data, -1 mean cpu [default: -1]')
 
 # option
-parser.add_argument('-snapshot', type=str, default=None,
+parser.add_argument('-snapshot', type=str, default='./model/best_steps_2000.pt',
                     help='filename of model snapshot [default: None]')
 args = parser.parse_args()
 
@@ -96,6 +96,7 @@ def predict(model, vocab, sentence):
 
     print('最大分數:', max_score)
     print('最大情緒:', max_emotion)
+    print(end='\n')
 
 print('Loading data...')
 text_field = data.Field(lower=True)
@@ -122,9 +123,10 @@ for attr, value in sorted(args.__dict__.items()):
         continue
     print('\t{}={}'.format(attr.upper(), value))
     
-model_path = './snapshot/best_steps_1600.pt'
+model_path = './snapshot/best_steps_1100.pt'
 # text_cnn = model.TextCNN(model_path)
 text_cnn = model.TextCNN(args)
+
 if args.snapshot:
     print('\nLoading model from {}...\n'.format(args.snapshot))
     text_cnn.load_state_dict(torch.load(args.snapshot))
@@ -135,15 +137,21 @@ if args.cuda:
     
 # -----------------------------------------------------------------
 state_dict = torch.load(model_path)
-# state_dict = torch.load(args)
+# state_dict = torch.load(args.)
 
 # 將加載的狀態字典分配給模型實例的 state_dict 屬性
 text_cnn.load_state_dict(state_dict)
 
 # 評估模式
-text_cnn.eval()
-predict(text_cnn, vocab, '這家店超爛，完全不好吃')
-
+# text_cnn.eval()
+# print("很開心")
+# predict(text_cnn, vocab, '開心')
+# print("不開心")
+# predict(text_cnn, vocab, '不開心')
+# print("今天的天氣不錯")
+# predict(text_cnn, vocab, '今天的天氣不錯')
+# print("操控性好，性價比高，油耗低")
+# predict(text_cnn, vocab, '操控性好，性價比高，油耗低')
 # training
 try:
     train.train(train_iter, dev_iter, text_cnn, args) 
