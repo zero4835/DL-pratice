@@ -7,6 +7,7 @@ import model
 import train
 import dataset
 
+
 parser = argparse.ArgumentParser(description='TextCNN text classifier')
 # learning
 parser.add_argument('-lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
@@ -68,7 +69,7 @@ def load_dataset(text_field, label_field, args, **kwargs):
         sort_key=lambda x: len(x.text),
         **kwargs)
     # train_iter={Iterator:443} batch_size:128
-    # dev_iter={Iterator:1} batch_size:7000
+    # dev_iter={Iterator:1} batch_size:7001
     return train_iter, dev_iter, vocab
 
 
@@ -120,7 +121,9 @@ for attr, value in sorted(args.__dict__.items()):
     if attr in {'vectors'}:
         continue
     print('\t{}={}'.format(attr.upper(), value))
-
+    
+model_path = './snapshot/best_steps_1600.pt'
+# text_cnn = model.TextCNN(model_path)
 text_cnn = model.TextCNN(args)
 if args.snapshot:
     print('\nLoading model from {}...\n'.format(args.snapshot))
@@ -131,15 +134,15 @@ if args.cuda:
     text_cnn = text_cnn.cuda()
     
 # -----------------------------------------------------------------
-model_path = './snapshot/best_steps_1600.pt'
 state_dict = torch.load(model_path)
+# state_dict = torch.load(args)
 
-# 将加载的状态字典分配给模型实例的 state_dict 属性
+# 將加載的狀態字典分配給模型實例的 state_dict 屬性
 text_cnn.load_state_dict(state_dict)
 
-# 将模型设置为评估模式
+# 評估模式
 text_cnn.eval()
-predict(text_cnn, vocab, '實在很難想像這是日本人的待客之道，一間坐位極不舒適超坑的拉麵直營店，平常日幾乎都不用排隊。採分區包廂式經營，每個包廂大約十個坐位，位子還超級窄小，椅子釘死在地板不能自由調整移動還要彎腰前傾縮著手臂吃，用餐環境超克難像是獄卒打開遮簾向X人送餐。說實在湯頭不錯但肉吃起來很瘦柴，蛋就像水煮鹽蛋也沒什麼特別的味道。麵質尚可但大約只有半球而已根本吃不飽要再點一碗越光米配加點的肉吃。價位是其他拉麵店近兩倍盤子價，其他拉麵店大部分加麵飯也都不用錢。附近超難停車的，連機車位都難找。')
+predict(text_cnn, vocab, '這家店超爛，完全不好吃')
 
 # training
 try:

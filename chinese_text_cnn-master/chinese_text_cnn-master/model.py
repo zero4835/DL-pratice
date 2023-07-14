@@ -16,10 +16,10 @@ class TextCNN(nn.Module):
         vocabulary_size = args.vocabulary_size
         embedding_dimension = args.embedding_dim
 
-        # num_embeddings (python:int) – 词典的大小尺寸，比如总共出现5000个词，那就输入5000。此时index为（0-4999）
-        # embedding_dim (python:int) – 嵌入向量的维度，即用多少维来表示一个符号。
-        # 输入: (∗) , 包含提取的编号的任意形状的长整型张量。
-        # 输出: (∗,H) , 其中 * 为输入的形状，H为embedding_dim
+        # num_embeddings (python:int) – 辭典的大小尺寸，比如一共出現5000個詞，則輸入5000。此時索引為（0-4999）
+        # embedding_dim (python:int) – 嵌入向量的維度，即用多少維来表示一个符號。
+        # 输入: (∗) , 包含提取數量的任意形狀的長整型張量。
+        # 输出: (∗,H) , 其中 * 為輸入的形狀，H為embedding_dim
         self.embedding = nn.Embedding(vocabulary_size, embedding_dimension)
 
         if args.static:
@@ -29,9 +29,9 @@ class TextCNN(nn.Module):
             chanel_num += 1
         else:
             self.embedding2 = None
-        # in_channel:　输入数据的通道数，例RGB图片通道数为3；
-        # out_channel: 输出数据的通道数，这个根据模型调整；
-        # kennel_size: 卷积核大小
+        # in_channel:　輸入數據的通道數，例如RGB圖片通道數為3；
+        # out_channel: 輸出數據的通道數，此根據模型調整；
+        # kennel_size: 卷積和大小
         self.convs = nn.ModuleList(
             [nn.Conv2d(chanel_num, filter_num, (size, embedding_dimension)) for size in filter_sizes])
         self.dropout = nn.Dropout(args.dropout)
