@@ -40,7 +40,7 @@ parser.add_argument('-pretrained-path', type=str, default='pretrained', help='pa
 parser.add_argument('-device', type=int, default=-1, help='device to use for iterate data, -1 mean cpu [default: -1]')
 
 # option
-parser.add_argument('-snapshot', type=str, default='./model/best_steps_2000.pt',
+parser.add_argument('-snapshot', type=str, default=None,
                     help='filename of model snapshot [default: None]')
 args = parser.parse_args()
 
@@ -136,13 +136,13 @@ if args.cuda:
     text_cnn = text_cnn.cuda()
     
 # -----------------------------------------------------------------
-state_dict = torch.load(model_path)
-# state_dict = torch.load(args.)
+# state_dict = torch.load(model_path)
+# # state_dict = torch.load(args.)
 
-# 將加載的狀態字典分配給模型實例的 state_dict 屬性
-text_cnn.load_state_dict(state_dict)
+# # 將加載的狀態字典分配給模型實例的 state_dict 屬性
+# text_cnn.load_state_dict(state_dict)
 
-# 評估模式
+# # 評估模式
 # text_cnn.eval()
 # print("很開心")
 # predict(text_cnn, vocab, '開心')
@@ -152,6 +152,7 @@ text_cnn.load_state_dict(state_dict)
 # predict(text_cnn, vocab, '今天的天氣不錯')
 # print("操控性好，性價比高，油耗低")
 # predict(text_cnn, vocab, '操控性好，性價比高，油耗低')
+
 # training
 try:
     train.train(train_iter, dev_iter, text_cnn, args) 
