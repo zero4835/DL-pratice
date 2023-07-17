@@ -40,7 +40,7 @@ parser.add_argument('-pretrained-path', type=str, default='pretrained', help='pa
 parser.add_argument('-device', type=int, default=-1, help='device to use for iterate data, -1 mean cpu [default: -1]')
 
 # option
-parser.add_argument('-snapshot', type=str, default='None',
+parser.add_argument('-snapshot', type=str, default='./model/best_steps_8300.pt',
                     help='filename of model snapshot [default: None]')
 args = parser.parse_args()
 
@@ -104,7 +104,7 @@ label_field = data.Field(sequential=False)
 # train_iter={Iterator:443} batch_size:128
 # dev_iter={Iterator:1} batch_size:7000
 train_iter, dev_iter, vocab = load_dataset(text_field, label_field, args, device=-1, repeat=False, shuffle=True)
-# 35572
+
 args.vocabulary_size = len(text_field.vocab)
 if args.static:
     args.embedding_dim = text_field.vocab.vectors.size()[-1]
@@ -123,7 +123,7 @@ for attr, value in sorted(args.__dict__.items()):
         continue
     print('\t{}={}'.format(attr.upper(), value))
     
-model_path = './model/best_steps_1700.pt'
+model_path = './model/best_steps_8300.pt'
 # text_cnn = model.TextCNN(model_path)
 text_cnn = model.TextCNN(args)
 
@@ -136,7 +136,7 @@ if args.cuda:
     text_cnn = text_cnn.cuda()
     
 # -----------------------------------------------------------------
-state_dict = torch.load(model_path)
+# state_dict = torch.load(model_path)
 # state_dict = torch.load(args.)
 
 # 將加載的狀態字典分配給模型實例的 state_dict 屬性
@@ -144,7 +144,7 @@ state_dict = torch.load(model_path)
 
 # # 評估模式
 # text_cnn.eval()
-# print("很開心")
+# print("開心")
 # predict(text_cnn, vocab, '開心')
 # print("不開心")
 # predict(text_cnn, vocab, '不開心')

@@ -17,6 +17,6 @@ def csv_to_tsv(input_file, output_file):
                 tsv_writer.writerow([label, text])
 
 if __name__ == "__main__":
-    input_file = "../chinese_text_cnn-master/chinese_text_cnn-master/data/train7.csv"  # 輸入的CSV檔案名稱
-    output_file = "../chinese_text_cnn-master/chinese_text_cnn-master/data/train7.tsv"  # 輸出的TSV檔案名稱
+    input_file = "../chinese_text_cnn-master/chinese_text_cnn-master/data/dev3.csv"  # 輸入的CSV檔案名稱
+    output_file = "../chinese_text_cnn-master/chinese_text_cnn-master/data/dev3.tsv"  # 輸出的TSV檔案名稱
     csv_to_tsv(input_file, output_file)
