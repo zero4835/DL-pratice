@@ -40,7 +40,7 @@ parser.add_argument('-pretrained-path', type=str, default='pretrained', help='pa
 parser.add_argument('-device', type=int, default=-1, help='device to use for iterate data, -1 mean cpu [default: -1]')
 
 # option
-parser.add_argument('-snapshot', type=str, default=None,
+parser.add_argument('-snapshot', type=str, default='None',
                     help='filename of model snapshot [default: None]')
 args = parser.parse_args()
 
@@ -123,23 +123,23 @@ for attr, value in sorted(args.__dict__.items()):
         continue
     print('\t{}={}'.format(attr.upper(), value))
     
-model_path = './snapshot/best_steps_1100.pt'
+model_path = './model/best_steps_1700.pt'
 # text_cnn = model.TextCNN(model_path)
 text_cnn = model.TextCNN(args)
 
 if args.snapshot:
     print('\nLoading model from {}...\n'.format(args.snapshot))
-    text_cnn.load_state_dict(torch.load(args.snapshot))
+    # text_cnn.load_state_dict(torch.load(args.snapshot))
 
 if args.cuda:
     torch.cuda.set_device(args.device)
     text_cnn = text_cnn.cuda()
     
 # -----------------------------------------------------------------
-# state_dict = torch.load(model_path)
-# # state_dict = torch.load(args.)
+state_dict = torch.load(model_path)
+# state_dict = torch.load(args.)
 
-# # 將加載的狀態字典分配給模型實例的 state_dict 屬性
+# 將加載的狀態字典分配給模型實例的 state_dict 屬性
 # text_cnn.load_state_dict(state_dict)
 
 # # 評估模式

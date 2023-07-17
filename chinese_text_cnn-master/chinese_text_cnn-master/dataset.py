@@ -16,7 +16,7 @@ def get_dataset(path, text_field, label_field):
     text_field.tokenize = word_cut
     train, dev = data.TabularDataset.splits(
         path=path, format='tsv', skip_header=True,
-        train='train.tsv', validation='dev.tsv',
+        train='train7.tsv', validation='dev2.tsv',
         fields=[
             ('index', None),
             ('label', label_field),
