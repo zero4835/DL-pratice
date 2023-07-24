@@ -40,7 +40,7 @@ parser.add_argument('-pretrained-path', type=str, default='pretrained', help='pa
 parser.add_argument('-device', type=int, default=-1, help='device to use for iterate data, -1 mean cpu [default: -1]')
 
 # option
-parser.add_argument('-snapshot', type=str, default='./model/best_steps_8300.pt',
+parser.add_argument('-snapshot', type=str, default=None,
                     help='filename of model snapshot [default: None]')
 args = parser.parse_args()
 
@@ -123,7 +123,7 @@ for attr, value in sorted(args.__dict__.items()):
         continue
     print('\t{}={}'.format(attr.upper(), value))
     
-model_path = './model/best_steps_8300.pt'
+model_path = './model/best_steps_100.pt'
 # text_cnn = model.TextCNN(model_path)
 text_cnn = model.TextCNN(args)
 
@@ -137,21 +137,25 @@ if args.cuda:
     
 # -----------------------------------------------------------------
 # state_dict = torch.load(model_path)
-# state_dict = torch.load(args.)
 
 # 將加載的狀態字典分配給模型實例的 state_dict 屬性
 # text_cnn.load_state_dict(state_dict)
 
 # # 評估模式
 # text_cnn.eval()
+# print("十分多好吃的美食,建議可停車再轉騎irent 到夜市")
+# predict(text_cnn, vocab, '十分多好吃的美食,建議可停車再轉騎irent 到夜市')
+# print("2023.01.20晚上6點到訪,感覺比之前人少沒有很擁擠,有些攤商沒開應該是放假去")
+# predict(text_cnn, vocab, '2023.01.20晚上6點到訪,感覺比之前人少沒有很擁擠,有些攤商沒開應該是放假去')
+# print("很漂亮！,但不要冬天來…")
+# predict(text_cnn, vocab, '很漂亮！,但不要冬天來…')
+# print("來了好幾次，都只是看夕陽後就離開了，但這次來有看到ubike,就決定留下騎腳踏車，感覺真好，夏天的晚上最適合在海邊騎單車，風徐徐吹來很舒服，夜晚的海邊很安靜。")
+# predict(text_cnn, vocab, '來了好幾次，都只是看夕陽後就離開了，但這次來有看到ubike,就決定留下騎腳踏車，感覺真好，夏天的晚上最適合在海邊騎單車，風徐徐吹來很舒服，夜晚的海邊很安靜。')
+
 # print("開心")
 # predict(text_cnn, vocab, '開心')
 # print("不開心")
 # predict(text_cnn, vocab, '不開心')
-# print("今天的天氣不錯")
-# predict(text_cnn, vocab, '今天的天氣不錯')
-# print("操控性好，性價比高，油耗低")
-# predict(text_cnn, vocab, '操控性好，性價比高，油耗低')
 
 # training
 try:
