@@ -1,7 +1,7 @@
 import pandas as pd
 
 # 讀取 TSV 檔案
-df = pd.read_csv('./data/self_train.tsv', sep='\t')
+df = pd.read_csv('./data/self_dev.tsv', sep='\t')
 
 # 輸出資料框的前幾行，以便檢查是否成功讀取 'text' 欄位
 print(df.head())
@@ -15,4 +15,4 @@ df.insert(0, 'index', range(len(df)))
 #     df['text'] = df['text'].str.replace('\[.*?\]', '')  # 過濾掉 [表情符號]
 
 # 將處理後的資料存回新的 TSV 檔
-df.to_csv('./data/self_train.tsv', sep='\t', index=False)
+df.to_csv('./data/self_dev.tsv', sep='\t', index=False)
