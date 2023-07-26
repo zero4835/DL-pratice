@@ -2,7 +2,7 @@ import os
 import sys
 import torch
 import torch.nn.functional as F
-
+import torch.autograd as autograd
 
 def train(train_iter, dev_iter, model, args):
     if args.cuda:
@@ -11,6 +11,13 @@ def train(train_iter, dev_iter, model, args):
     steps = 0
     best_acc = 0
     last_step = 0
+    
+    best_acc_file = os.path.join('./model', 'best_accuracy.txt')
+    if os.path.exists(best_acc_file):
+        with open(best_acc_file, 'r') as f:
+            best_acc = float(f.read())
+    
+    
     model.train()
     for epoch in range(1, args.epochs + 1):
         for batch in train_iter:
@@ -45,7 +52,7 @@ def train(train_iter, dev_iter, model, args):
                     last_step = steps
                     if args.save_best:
                         print('Saving best model, acc: {:.4f}%\n'.format(best_acc))
-                        save(model, './model', 'best', steps)
+                        save(model, './model', 'best', steps, best_acc)
                 else:
                     if steps - last_step >= args.early_stopping:
                         print('\nearly stop by {} steps, acc: {:.4f}%'.format(args.early_stopping, best_acc))
@@ -78,12 +85,35 @@ def eval(data_iter, model, args):
                                                                        size))
     return accuracy
 
+def predict(text, model, text_field, label_feild, args, cuda_flag):
+    assert isinstance(text, str)
+    model.eval()
+    text = text_field.preprocess(text)
+    max_filter_size = max(args.filter_sizes)
+    if len(text) < max_filter_size:
+        pad_size = max_filter_size - len(text)
+        text = text + [text_field.pad_token] * pad_size
+    text = [[text_field.vocab.stoi[x] for x in text]]
+    x = torch.tensor(text)
+    x = autograd.Variable(x)
+    if cuda_flag:
+        x = x.cuda()
+    output = model(x)
+    _, predicted = torch.max(output, 1)
+    print(output)
+    return label_feild.vocab.itos[predicted.item()+1]
 
-def save(model, save_dir, save_prefix, steps):
+
+
+def save(model, save_dir, save_prefix, steps, best_acc=None):
     if not os.path.isdir(save_dir):
         os.makedirs(save_dir)
     save_prefix = os.path.join(save_dir, save_prefix)
     save_path = '{}_steps_{}.pt'.format(save_prefix, steps)
     torch.save(model.state_dict(), save_path)
+    if best_acc is not None:
+      # 同時保存最高正確率
+      with open(os.path.join(save_dir, 'best_accuracy.txt'), 'w') as f:
+        f.write(str(best_acc))
 
 

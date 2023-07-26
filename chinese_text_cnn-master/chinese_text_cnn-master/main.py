@@ -103,55 +103,6 @@ def predict(model, vocab, sentence):
     print('最大情緒:', max_emotion)
     print(end='\n')
 
-
-jieba.setLogLevel(logging.INFO)
-regex = re.compile(r'[^\u4e00-\u9fa5aA-Za-z0-9]')
-
-
-def word_cut(text):
-    text = regex.sub(' ', text)
-    return [word for word in jieba.cut(text) if word.strip()]
-
-
-# def predict(input_text):
-#     # 加載訓練好的模型
-#     model_path = './model/best_steps_100.pt'
-#     text_cnn = model.TextCNN(args)
-#     text_cnn.load_state_dict(torch.load(model_path))
-
-#     # 準備輸入文本進行預測
-#     tokenized_text = word_cut(input_text)  # 對輸入文本進行分詞
-#     indexed_text = [vocab.stoi[token] for token in tokenized_text]  # 將分詞轉換為索引
-
-#     # 將索引轉換為 PyTorch 張量
-#     input_tensor = torch.tensor(indexed_text).unsqueeze(0)  # 添加批次維度
-    
-#     max_filter_size = max(args.filter_sizes)
-#     if input_tensor.size(1) < max_filter_size:
-#         # 如果文本長度不足，則進行填充
-#         padding_length = max_filter_size - input_tensor.size(1)
-#         # 通道擴展
-#         input_tensor = input_tensor.expand(-1, max_filter_size)
-#         # 然後再進行 padding
-#         input_tensor = F.pad(input_tensor, (0, padding_length), 'constant', 0)
-        
-#     # 進行情緒分析
-#     input_tensor = input_tensor.unsqueeze(1)  # 添加通道維度 (batch_size, 1, sentence_len)
-#     text_cnn.eval()
-#     with torch.no_grad():
-#         if args.cuda:
-#             input_tensor = input_tensor.cuda()
-#         logits = text_cnn(input_tensor)
-#         predicted_label = torch.argmax(logits, dim=1).tolist()[0]
-
-#     # 使用 vocab 將預測的標籤索引映射到對應的情緒類別
-#     predicted_sentiment = label_field.vocab.itos[predicted_label]
-
-#     print(f"預測情緒: {predicted_sentiment}")
-
-
-
-
 print('Loading data...')
 text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
@@ -195,26 +146,37 @@ state_dict = torch.load(model_path)
 # 將加載的狀態字典分配給模型實例的 state_dict 屬性
 text_cnn.load_state_dict(state_dict)
 
+emotion_classes = ['正面情緒', '中性情緒', '負面情緒']
+
+label = train.predict("蠻多小店值得來走走,巷道非常小，建議不要開車來，交通不太方便", text_cnn, text_field, label_field, args, args.cuda)
+print('\n[Text]  {}\n[Label] {}\n'.format("蠻多小店值得來走走,巷道非常小，建議不要開車來，交通不太方便", label))
+  
+label = train.predict("開心", text_cnn, text_field, label_field, args, args.cuda)
+print('\n[Text]  {}\n[Label] {}\n'.format("開心", label))
+
+label = train.predict("不開心", text_cnn, text_field, label_field, args, args.cuda)
+print('\n[Text]  {}\n[Label] {}\n'.format("不開心", label))
+
 # # 評估模式
-text_cnn.eval()
-print("十分多好吃的美食,建議可停車再轉騎irent 到夜市")
-predict(text_cnn, vocab, '十分多好吃的美食,建議可停車再轉騎irent 到夜市')
-print("2023.01.20晚上6點到訪,感覺比之前人少沒有很擁擠,有些攤商沒開應該是放假去")
-predict(text_cnn, vocab, '2023.01.20晚上6點到訪,感覺比之前人少沒有很擁擠,有些攤商沒開應該是放假去')
-print("很漂亮！,但不要冬天來…")
-predict(text_cnn, vocab, '很漂亮！,但不要冬天來…')
-print("來了好幾次，都只是看夕陽後就離開了，但這次來有看到ubike,就決定留下騎腳踏車，感覺真好，夏天的晚上最適合在海邊騎單車，風徐徐吹來很舒服，夜晚的海邊很安靜。")
-predict(text_cnn, vocab, '來了好幾次，都只是看夕陽後就離開了，但這次來有看到ubike,就決定留下騎腳踏車，感覺真好，夏天的晚上最適合在海邊騎單車，風徐徐吹來很舒服，夜晚的海邊很安靜。')
-print("開心")
-predict(text_cnn, vocab, '開心')
-print("不開心")
-predict(text_cnn, vocab, '不開心')
-print("2023.01.20晚上6點到訪,感覺比之前人少沒有很擁擠,有些攤商沒開應該是放假去")
-predict(text_cnn, vocab, '2023.01.20晚上6點到訪,感覺比之前人少沒有很擁擠,有些攤商沒開應該是放假去')
-print("美中不足的是有營業的店家不多，不過有營業的店家販售物品都相當有特色。")
-predict(text_cnn, vocab, '美中不足的是有營業的店家不多，不過有營業的店家販售物品都相當有特色。')
-print("蠻多小店值得來走走,巷道非常小，建議不要開車來，交通不太方便")
-predict(text_cnn, vocab, '蠻多小店值得來走走,巷道非常小，建議不要開車來，交通不太方便')
+# text_cnn.eval()
+# print("十分多好吃的美食,建議可停車再轉騎irent 到夜市")
+# predict(text_cnn, vocab, '十分多好吃的美食,建議可停車再轉騎irent 到夜市')
+# print("2023.01.20晚上6點到訪,感覺比之前人少沒有很擁擠,有些攤商沒開應該是放假去")
+# predict(text_cnn, vocab, '2023.01.20晚上6點到訪,感覺比之前人少沒有很擁擠,有些攤商沒開應該是放假去')
+# print("很漂亮！,但不要冬天來…")
+# predict(text_cnn, vocab, '很漂亮！,但不要冬天來…')
+# print("來了好幾次，都只是看夕陽後就離開了，但這次來有看到ubike,就決定留下騎腳踏車，感覺真好，夏天的晚上最適合在海邊騎單車，風徐徐吹來很舒服，夜晚的海邊很安靜。")
+# predict(text_cnn, vocab, '來了好幾次，都只是看夕陽後就離開了，但這次來有看到ubike,就決定留下騎腳踏車，感覺真好，夏天的晚上最適合在海邊騎單車，風徐徐吹來很舒服，夜晚的海邊很安靜。')
+# print("開心")
+# predict(text_cnn, vocab, '開心')
+# print("不開心")
+# predict(text_cnn, vocab, '不開心')
+# print("2023.01.20晚上6點到訪,感覺比之前人少沒有很擁擠,有些攤商沒開應該是放假去")
+# predict(text_cnn, vocab, '2023.01.20晚上6點到訪,感覺比之前人少沒有很擁擠,有些攤商沒開應該是放假去')
+# print("美中不足的是有營業的店家不多，不過有營業的店家販售物品都相當有特色。")
+# predict(text_cnn, vocab, '美中不足的是有營業的店家不多，不過有營業的店家販售物品都相當有特色。')
+# print("蠻多小店值得來走走,巷道非常小，建議不要開車來，交通不太方便")
+# predict(text_cnn, vocab, '蠻多小店值得來走走,巷道非常小，建議不要開車來，交通不太方便')
 
 
 
