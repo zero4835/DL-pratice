@@ -46,7 +46,7 @@ parser.add_argument('-pretrained-path', type=str, default='pretrained', help='pa
 parser.add_argument('-device', type=int, default=-1, help='device to use for iterate data, -1 mean cpu [default: -1]')
 
 # option
-parser.add_argument('-snapshot', type=str, default='./model/best_steps_100.pt',
+parser.add_argument('-snapshot', type=str, default="./model/best_steps_2200.pt",
                     help='filename of model snapshot [default: None]')
 args = parser.parse_args()
 
@@ -106,7 +106,7 @@ def predict(model, vocab, sentence):
     return max_score, emotion
   
 def test(model, vocab):
-  data = pd.read_csv("./data/self_test.tsv", sep="\t")
+  data = pd.read_csv("./data/self_test1.tsv", sep="\t")
   
   for text in data['text']:
     score, emotion = predict(model, vocab, text)
@@ -130,8 +130,7 @@ if args.multichannel:
     args.non_static = True
 # 3
 args.class_num = len(label_field.vocab) - 1
-print("label_field.vocab", end="")
-print(label_field.vocab)
+
 args.cuda = args.device != -1 and torch.cuda.is_available()
 args.filter_sizes = [int(size) for size in args.filter_sizes.split(',')]
 
@@ -141,8 +140,7 @@ for attr, value in sorted(args.__dict__.items()):
         continue
     print('\t{}={}'.format(attr.upper(), value))
     
-# 1600  90.6333 % and 100 95%
-model_path = './model/best_steps_100.pt'
+model_path = './model/81.6%.pt'
 text_cnn = model.TextCNN(args)
 
 if args.snapshot:
@@ -156,13 +154,13 @@ if args.cuda:
 # -----------------------------------------------------------------
 state_dict = torch.load(model_path)
 
-## 將加載的狀態字典分配給模型實例的 state_dict 屬性
+# 將加載的狀態字典分配給模型實例的 state_dict 屬性
 text_cnn.load_state_dict(state_dict)
 text_cnn.eval()
 test(text_cnn, vocab)
 
 # training
-try:
-    train.train(train_iter, dev_iter, text_cnn, args) 
-except KeyboardInterrupt:
-    print('Exiting from training early')
+# try:
+#     train.train(train_iter, dev_iter, text_cnn, args) 
+# except KeyboardInterrupt:
+#     print('Exiting from training early')

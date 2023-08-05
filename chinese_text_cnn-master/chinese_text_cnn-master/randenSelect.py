@@ -26,8 +26,9 @@ def split_data_and_add_index(input_file, train_output_file, val_output_file, tes
     train_set = pd.concat([train_set, train_subset])
     train_set = df.loc[train_indices]
 
+    test_set = df.drop(index=train_indices)
     # 再從剩餘的訓練集中隨機抽取指定數量的樣本，作為測試集
-    remaining_indices = random.sample(range(len(df)), num_test_samples)
+    remaining_indices = random.sample(range(len(test_set)), num_test_samples)
     test_indices = random.sample(remaining_indices, num_test_samples)
     test_set = df.loc[test_indices]
 
@@ -46,13 +47,20 @@ def split_data_and_add_index(input_file, train_output_file, val_output_file, tes
     ad.addIndextotsv(test_output_file)
     
 # 使用例子：
+
 input_tsv_file = './data/new_trains_10000.tsv'
 train_output_tsv_file = './data/self_train.tsv'
 val_output_tsv_file = './data/self_dev.tsv'
 test_output_tsv_file = './data/self_test.tsv'
+
+# input_tsv_file = './data/trains_10000.tsv'
+# train_output_tsv_file = './data/self_train1.tsv'
+# val_output_tsv_file = './data/self_dev1.tsv'
+# test_output_tsv_file = './data/self_test1.tsv'
+
 num_train_samples_to_extract = 2000  # 訓練集隨機抽取的樣本數量
-num_val_samples_to_extract = 300  # 驗證集隨機抽取的樣本數量
-num_test_samples_to_extract = 10  # 測試集隨機抽取的樣本數量
+num_val_samples_to_extract = 250  # 驗證集隨機抽取的樣本數量
+num_test_samples_to_extract = 20  # 測試集隨機抽取的樣本數量
 
 split_data_and_add_index(input_tsv_file,
                          train_output_tsv_file,
