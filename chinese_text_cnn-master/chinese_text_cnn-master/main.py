@@ -3,6 +3,7 @@ import torch
 import torchtext.data as data
 from torchtext.vocab import Vectors
 import torch.nn.functional as F
+import pandas as pd
 
 import model
 import train
@@ -45,7 +46,7 @@ parser.add_argument('-pretrained-path', type=str, default='pretrained', help='pa
 parser.add_argument('-device', type=int, default=-1, help='device to use for iterate data, -1 mean cpu [default: -1]')
 
 # option
-parser.add_argument('-snapshot', type=str, default="./model/best_steps_100.pt",
+parser.add_argument('-snapshot', type=str, default='./model/best_steps_100.pt',
                     help='filename of model snapshot [default: None]')
 args = parser.parse_args()
 
@@ -96,12 +97,22 @@ def predict(model, vocab, sentence):
     max_emotion_index = max_index.item()
 
     # 根據索引對應到情緒類別
-    emotion_classes = ['正面情緒', '中性情緒', '負面情緒']
-    max_emotion = emotion_classes[max_emotion_index]
+    emotion_classes = ['正面情緒',  '負面情緒']
+    emotion = emotion_classes[max_emotion_index]
 
-    print('最大分數:', max_score)
-    print('最大情緒:', max_emotion)
-    print(end='\n')
+    # print('最大分數:', max_score)
+    # print('最大情緒:', max_emotion)
+    # print(end='\n')
+    return max_score, emotion
+  
+def test(model, vocab):
+  data = pd.read_csv("./data/self_test.tsv", sep="\t")
+  
+  for text in data['text']:
+    score, emotion = predict(model, vocab, text)
+    print(f"文本: {text}")
+    print(f"最大分數: {score}")
+    print(f"最大情緒: {emotion}\n")
 
 print('Loading data...')
 text_field = data.Field(lower=True)
@@ -118,7 +129,9 @@ if args.multichannel:
     args.static = True
     args.non_static = True
 # 3
-args.class_num = len(label_field.vocab)
+args.class_num = len(label_field.vocab) - 1
+print("label_field.vocab", end="")
+print(label_field.vocab)
 args.cuda = args.device != -1 and torch.cuda.is_available()
 args.filter_sizes = [int(size) for size in args.filter_sizes.split(',')]
 
@@ -128,8 +141,8 @@ for attr, value in sorted(args.__dict__.items()):
         continue
     print('\t{}={}'.format(attr.upper(), value))
     
+# 1600  90.6333 % and 100 95%
 model_path = './model/best_steps_100.pt'
-# text_cnn = model.TextCNN(model_path)
 text_cnn = model.TextCNN(args)
 
 if args.snapshot:
@@ -143,50 +156,13 @@ if args.cuda:
 # -----------------------------------------------------------------
 state_dict = torch.load(model_path)
 
-# 將加載的狀態字典分配給模型實例的 state_dict 屬性
+## 將加載的狀態字典分配給模型實例的 state_dict 屬性
 text_cnn.load_state_dict(state_dict)
-
-emotion_classes = ['正面情緒', '中性情緒', '負面情緒']
-
-label = train.predict("蠻多小店值得來走走,巷道非常小，建議不要開車來，交通不太方便", text_cnn, text_field, label_field, args, args.cuda)
-print('\n[Text]  {}\n[Label] {}\n'.format("蠻多小店值得來走走,巷道非常小，建議不要開車來，交通不太方便", label))
-  
-label = train.predict("開心", text_cnn, text_field, label_field, args, args.cuda)
-print('\n[Text]  {}\n[Label] {}\n'.format("開心", label))
-
-label = train.predict("不開心", text_cnn, text_field, label_field, args, args.cuda)
-print('\n[Text]  {}\n[Label] {}\n'.format("不開心", label))
-
-# # 評估模式
-# text_cnn.eval()
-# print("十分多好吃的美食,建議可停車再轉騎irent 到夜市")
-# predict(text_cnn, vocab, '十分多好吃的美食,建議可停車再轉騎irent 到夜市')
-# print("2023.01.20晚上6點到訪,感覺比之前人少沒有很擁擠,有些攤商沒開應該是放假去")
-# predict(text_cnn, vocab, '2023.01.20晚上6點到訪,感覺比之前人少沒有很擁擠,有些攤商沒開應該是放假去')
-# print("很漂亮！,但不要冬天來…")
-# predict(text_cnn, vocab, '很漂亮！,但不要冬天來…')
-# print("來了好幾次，都只是看夕陽後就離開了，但這次來有看到ubike,就決定留下騎腳踏車，感覺真好，夏天的晚上最適合在海邊騎單車，風徐徐吹來很舒服，夜晚的海邊很安靜。")
-# predict(text_cnn, vocab, '來了好幾次，都只是看夕陽後就離開了，但這次來有看到ubike,就決定留下騎腳踏車，感覺真好，夏天的晚上最適合在海邊騎單車，風徐徐吹來很舒服，夜晚的海邊很安靜。')
-# print("開心")
-# predict(text_cnn, vocab, '開心')
-# print("不開心")
-# predict(text_cnn, vocab, '不開心')
-# print("2023.01.20晚上6點到訪,感覺比之前人少沒有很擁擠,有些攤商沒開應該是放假去")
-# predict(text_cnn, vocab, '2023.01.20晚上6點到訪,感覺比之前人少沒有很擁擠,有些攤商沒開應該是放假去')
-# print("美中不足的是有營業的店家不多，不過有營業的店家販售物品都相當有特色。")
-# predict(text_cnn, vocab, '美中不足的是有營業的店家不多，不過有營業的店家販售物品都相當有特色。')
-# print("蠻多小店值得來走走,巷道非常小，建議不要開車來，交通不太方便")
-# predict(text_cnn, vocab, '蠻多小店值得來走走,巷道非常小，建議不要開車來，交通不太方便')
-
-
-
-# print("不開心")
-# predict('不開心')
-# print("很漂亮！,但不要冬天來…")
-# predict('很漂亮！,但不要冬天來…')
+text_cnn.eval()
+test(text_cnn, vocab)
 
 # training
-# try:
-#     train.train(train_iter, dev_iter, text_cnn, args) 
-# except KeyboardInterrupt:
-#     print('Exiting from training early')
+try:
+    train.train(train_iter, dev_iter, text_cnn, args) 
+except KeyboardInterrupt:
+    print('Exiting from training early')
