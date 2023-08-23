@@ -1,5 +1,6 @@
 import argparse
 import pandas as pd
+import netron
 import torch
 import torchtext.data as data
 from torchtext.vocab import Vectors
@@ -122,7 +123,7 @@ parser.add_argument(
 parser.add_argument(
     "-snapshot",
     type=str,
-    default='./snapshot/best_steps_200.pt',
+    default="./snapshot/best_steps_200.pt",
     help="filename of model snapshot [default: None]",
 )
 args = parser.parse_args()
@@ -134,7 +135,9 @@ def load_word_vectors(model_name, model_path):
 
 
 def load_dataset(text_field, label_field, args, **kwargs):
-    train_dataset, dev_dataset, test_dataset = dataset.get_dataset("data", text_field, label_field)
+    train_dataset, dev_dataset, test_dataset = dataset.get_dataset(
+        "data", text_field, label_field
+    )
     if args.static and args.pretrained_name and args.pretrained_path:
         vectors = load_word_vectors(args.pretrained_name, args.pretrained_path)
         text_field.build_vocab(train_dataset, dev_dataset, vectors=vectors)
@@ -176,6 +179,7 @@ def predict(model, vocab, sentence):
 
     return max_score, emotion
 
+
 def eval(data_iter, model, args):
     model.eval()
     corrects, avg_loss = 0, 0
@@ -190,12 +194,19 @@ def eval(data_iter, model, args):
         logits = model(feature)
         loss = F.cross_entropy(logits, target)
         avg_loss += loss.item()
-        corrects += (torch.max(logits, 1)
-                     [1].view(target.size()).data == target.data).sum()
-        
+        corrects += (
+            torch.max(logits, 1)[1].view(target.size()).data == target.data
+        ).sum()
+
         # Print test text and predicted emotion for each sample in the batch
-        for text, true_label, pred_label in zip(feature, target, torch.argmax(logits, dim=1)):
-            words = [text_field.vocab.itos[word] for word in text.tolist() if word != text_field.vocab.stoi['<pad>']]
+        for text, true_label, pred_label in zip(
+            feature, target, torch.argmax(logits, dim=1)
+        ):
+            words = [
+                text_field.vocab.itos[word]
+                for word in text.tolist()
+                if word != text_field.vocab.stoi["<pad>"]
+            ]
             text = " ".join(words)
             true_emotion = true_emotion_classes[true_label.item()]
             pred_emotion = emotion_classes[pred_label.item()]
@@ -203,15 +214,17 @@ def eval(data_iter, model, args):
             print(f"True label item: {true_label.item()}")
             print(f"True Emotion: {true_emotion}")
             print(f"Predicted Emotion: {pred_emotion}\n")
-            
+
     size = len(data_iter.dataset)
     avg_loss /= size
     accuracy = 100.0 * corrects / size
-    print('\nEvaluation - loss: {:.6f}  acc: {:.4f}%({}/{}) \n'.format(avg_loss,
-                                                                       accuracy,
-                                                                       corrects,
-                                                                       size))
-    return float('{:.4f}'.format(accuracy.item()))
+    print(
+        "\nEvaluation - loss: {:.6f}  acc: {:.4f}%({}/{}) \n".format(
+            avg_loss, accuracy, corrects, size
+        )
+    )
+    return float("{:.4f}".format(accuracy.item()))
+
 
 def test(model, vocab):
     data = pd.read_csv("./data/self_test.tsv", sep="\t")
@@ -219,15 +232,16 @@ def test(model, vocab):
     model.eval()
     emotion_classes = ["正面", "中立", "負面"]
     for index, row in data.iterrows():
-        label = row["label"]  
-        text = row["text"] 
+        label = row["label"]
+        text = row["text"]
         score, emotion = predict(model, vocab, text)
         print(f"文本: {text}")
         print(f"最大分數: {score}")
         print(f"Label: {emotion_classes[label]}")
         print(f"最大情緒: {emotion}\n")
-    
+
     # eval(test_iter, model, args)
+
 
 print("Loading data...")
 text_field = data.Field(lower=True)
@@ -243,7 +257,7 @@ if args.static:
 if args.multichannel:
     args.static = True
     args.non_static = True
-    
+
 # classification 3
 args.class_num = len(label_field.vocab) - 1
 
@@ -288,12 +302,14 @@ if args.cuda:
     text_cnn = text_cnn.cuda()
 
 # model_path = './snapshot/best_steps_100.pt'
-# state_dict = torch.load(model_path)
+# state_dict = torch.load(model_spath)
 # text_cnn.load_state_dict(state_dict)
-test(text_cnn, text_field.vocab)
+# test(text_cnn, text_field.vocab)
 
+# Output model structure
+# netron.start(args.snapshot)
 
-# try:
-#     train.train(train_iter, dev_iter, text_cnn, args)
-# except KeyboardInterrupt:
-#     print('Exiting from training early')
+try:
+    train.train(train_iter, dev_iter, text_cnn, args)
+except KeyboardInterrupt:
+    print("Exiting from training early")
